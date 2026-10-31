@@ -32,3 +32,6 @@ shell/android/**/*.aab
 .idea/
 .vscode/
 *.log
+
+# 沙箱内的 SSH 私钥（持久化用，绝不提交）
+.ssh/
