@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+backend/data/
+*.db
+*.db-wal
+*.db-shm
+
+# 环境与密钥
+.env
+.env.*
+!.env.example
+
+# Node / 前端构建产物
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Android 壳（阶段 4，本地 Trae 生成）
+shell/android/.gradle/
+shell/android/build/
+shell/android/app/build/
+shell/android/local.properties
+shell/android/**/*.apk
+shell/android/**/*.aab
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/
+*.log

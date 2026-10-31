@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    /* 大屏、老人使用：基准字号比常规 16px 更大，所有 rem 尺寸随之放大 */
+    font-size: 20px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply m-0 bg-paper text-ink antialiased;
+    font-family: theme('fontFamily.sans');
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  #app {
+    min-height: 100vh;
+  }
+}
