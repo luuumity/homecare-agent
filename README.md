@@ -202,6 +202,7 @@ npm run build      # 产物在 frontend/dist/
 ## 版本约定
 
 - 业务接口统一挂在 `/api/v1/` 下（阶段 1 起）；阶段 0 探针接口保留在 `/api/`。
+- 后端版本：`backend/.env` 的 `APP_VERSION`（默认值在 `backend/app/config.py`），当前 `0.4.0-stage3`。
 - 前端版本：`frontend/public/version.json`（`web_version`、`min_shell_version`、`built_at`）。
 - 壳版本：`shell/version.json`（阶段 4 随 APK 构建更新）。
 - 壳启动时对比 `/api/version` 的 `min_shell_version`，低于则提示家属安装新 APK；Web 更新走同域静态文件，刷新即生效。

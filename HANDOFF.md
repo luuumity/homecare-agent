@@ -41,7 +41,8 @@
 - 阶段 3：`frontend/` 完成大屏业务 UI，路由 `/`、`/chat`、`/items`、`/reminders`、`/contacts`、`/confirmations`、`/diagnose`；共享组件 `PageHeader`、`BaseModal`、`EmptyState`；接口统一走 `src/api.ts`（超时、错误、`X-Actor`、`URLSearchParams` 编码）。
 - 阶段 3 验收：`npm run build` 通过；浏览器端到端走通首页、对话（`find_items`）、物品增删与过滤、提醒暂停、打电话记录、待确认两步流程。
 - 沙箱限制：内置浏览器预览层会改写 URL 查询串，中文 `?q=` 在沙箱里会 400（curl 直连与经 Vite 均 200），中文搜索需在真实浏览器/平板复验。
-- 云端**没有** Android SDK / adb / 真机；仓库尚未 `git init`。
+- 云端**没有** Android SDK / adb / 真机；阶段 4 壳必须在本地 Trae（有 SDK + 真机）完成。
+- 仓库已托管在 GitHub：`https://github.com/luuumity/homecare-agent`（`main` 分支，已推送阶段 0–3 全部代码）。后续每完成一个阶段都需 commit + push。
 - 阶段 1–3 暂未加应用层鉴权（无账号体系），部署前在阶段 5 决定：优先 nginx Basic Auth / 平板端固定凭据，或后端 PIN 登录。上线前不要暴露到公网。
 
 ## 4. 本地 Trae 要做的 Android 壳（阶段 4）
