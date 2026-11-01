@@ -53,7 +53,7 @@ onMounted(load)
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-8 py-6">
+  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-4 sm:px-8 py-6">
     <PageHeader title="打电话" subtitle="只能打给名单里的家人，不能接外面电话" />
 
     <p v-if="notice" class="rounded-2xl bg-emerald-100 px-5 py-3 text-xl text-emerald-900">{{ notice }}</p>

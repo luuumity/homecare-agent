@@ -101,7 +101,7 @@ onMounted(load)
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-8 py-6">
+  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-4 sm:px-8 py-6">
     <PageHeader title="东西放哪了" subtitle="记下位置，找起来不费劲">
       <template #actions>
         <button

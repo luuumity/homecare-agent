@@ -90,7 +90,7 @@ onMounted(load)
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-8 py-6">
+  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-4 sm:px-8 py-6">
     <PageHeader title="需要确认的事" subtitle="健康、身份这类信息，要老人和家属都确认">
       <template #actions>
         <button

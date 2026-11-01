@@ -20,3 +20,10 @@
     min-height: 100vh;
   }
 }
+
+/* 手机等窄屏：等比缩小整体字号，避免横向溢出；大屏平板保持 20px */
+@media (max-width: 640px) {
+  html {
+    font-size: 15px;
+  }
+}

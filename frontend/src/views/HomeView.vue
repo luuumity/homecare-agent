@@ -139,8 +139,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-6xl flex-col gap-5 px-8 py-7">
-    <header class="flex items-start justify-between gap-4">
+  <main class="mx-auto flex min-h-screen max-w-6xl flex-col gap-5 px-4 py-6 sm:px-8 sm:py-7">
+    <header class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <p class="text-2xl text-muted">{{ greeting }}</p>
         <h1 class="mt-1 text-4xl font-bold tracking-wide">{{ dateText }}</h1>

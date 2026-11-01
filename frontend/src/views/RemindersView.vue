@@ -128,7 +128,7 @@ onMounted(load)
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-8 py-6">
+  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-5 px-4 sm:px-8 py-6">
     <PageHeader title="提醒我" subtitle="吃药、喝水、出门，都可以设">
       <template #actions>
         <button

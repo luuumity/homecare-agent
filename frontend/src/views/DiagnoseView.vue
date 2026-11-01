@@ -34,7 +34,7 @@ onMounted(load)
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-8 py-8">
+  <main class="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 sm:px-8 py-8">
     <header class="flex items-center justify-between gap-4">
       <h1 class="text-5xl font-bold">设备自检</h1>
       <div class="flex gap-4">

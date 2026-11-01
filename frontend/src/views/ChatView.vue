@@ -130,7 +130,7 @@ onMounted(loadHistory)
 </script>
 
 <template>
-  <main class="mx-auto flex h-screen max-w-5xl flex-col gap-4 px-8 py-6">
+  <main class="mx-auto flex h-screen max-w-5xl flex-col gap-4 px-4 sm:px-8 py-6">
     <PageHeader title="陪我说说话" subtitle="东西放哪、今天要做什么，都可以问我">
       <template #actions>
         <span
