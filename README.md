@@ -4,7 +4,7 @@
 
 ## 当前进度
 
-**阶段 5 初版已上线：https://homecare.cinnamon.xin**（nginx Basic Auth 临时保护，见「线上部署」）。平板浏览器打开即可完整使用首页、对话、物品、提醒、打电话、待确认与自检。
+**阶段 5 初版已上线：https://homecare.cinnamon.xin**（页面内 PIN 登录，见「线上部署」）。平板浏览器打开即可完整使用首页、对话、物品、提醒、打电话、待确认与自检。
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
@@ -204,14 +204,14 @@ npm run build      # 产物在 frontend/dist/
 - 阿里云香港轻量（Ubuntu 22.04.5，2C1G，30G 盘）+ 2G swap；nginx 1.18 静态托管 `dist`，`/api` 反代 `127.0.0.1:8000`
 - 后端 systemd（`homecare-api.service`，用户 `homecare`，仅监听 127.0.0.1，开机自启）
 - `https://homecare.cinnamon.xin` Let's Encrypt 证书生效（到期 2027-01-30，`certbot.timer` 自动续期），HTTP 301 跳 HTTPS
-- 全站 nginx Basic Auth（未登录返回 401）；ufw 仅放行 22/80/443
+- 页面内 PIN 登录（`POST /api/v1/auth/login`，HMAC 签名 Cookie，30 天有效；失败 5 次按 IP 锁定 5 分钟）；静态页面公开、业务接口全部要求会话；ufw 仅放行 22/80/443
 - 每日 03:30 用 `sqlite3 .backup` 做在线备份，保留 14 天；journald 上限 200M
 - 线上真实模型联调 3 轮通过（查物品 / 记忆问答 / 记物品，使用临时库，未污染生产库）
 - 浏览器实测：首页四磁贴与时钟、进入 `/chat` 并收到模型回复，控制台无报错
 
 ## 线上部署（阶段 5）
 
-线上地址 `https://homecare.cinnamon.xin`，临时用 nginx Basic Auth 保护（用户名 `family`，密码见交付说明；修改命令 `htpasswd` 或更新 `/etc/nginx/.htpasswd` 后 `systemctl reload nginx`）。
+线上地址 `https://homecare.cinnamon.xin`，使用页面内 6 位 PIN 登录（PIN 在服务器 `/opt/homecare/backend/.env` 的 `AUTH_PIN`，改后执行 `systemctl restart homecare-api`）。会话 Cookie 有效期 30 天，首页右上角可「退出」。连续输错 5 次按来源 IP 锁定 5 分钟。
 
 常用运维命令（在服务器上以 root 执行）：
 

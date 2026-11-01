@@ -43,7 +43,7 @@
 - 沙箱限制：内置浏览器预览层会改写 URL 查询串，中文 `?q=` 在沙箱里会 400（curl 直连与经 Vite 均 200），中文搜索需在真实浏览器/平板复验。
 - 云端**没有** Android SDK / adb / 真机；阶段 4 壳必须在本地 Trae（有 SDK + 真机）完成。
 - 仓库已托管在 GitHub：`https://github.com/luuumity/homecare-agent`（`main` 分支，已推送阶段 0–3 全部代码）。后续每完成一个阶段都需 commit + push。
-- 阶段 5 初版已上线：阿里云香港轻量（Ubuntu 22.04.5，2C1G），`https://homecare.cinnamon.xin`。阶段 1–3 没有应用层鉴权，因此**先用 nginx Basic Auth（`/etc/nginx/.htpasswd`）挡在公网前面**；正式交家人使用前应替换为后端 PIN 登录或平板固定凭据（壳里也能处理）。
+- 阶段 5 初版已上线：阿里云香港轻量（Ubuntu 22.04.5，2C1G），`https://homecare.cinnamon.xin`。鉴权已改为**页面内 PIN 登录**（`AUTH_PIN` 在服务器 `.env`，HMAC 签名 Cookie 30 天，失败 5 次按 IP 锁定 5 分钟）；目前是单 PIN、统一 `family` 角色，老人/家属双 PIN 需后续扩展。
 
 ## 4. 本地 Trae 要做的 Android 壳（阶段 4）
 
@@ -80,11 +80,11 @@
 - nginx 1.18：`/` → `/opt/homecare/web`（`try_files ... /index.html`）；`/api` → `127.0.0.1:8000`；`/assets` 长缓存；HTTP 301 跳 HTTPS。
 - 后端：`homecare-api.service`（用户 `homecare`，venv `/opt/homecare/backend/.venv`，仅监听 127.0.0.1），`.env` 权限 600，密钥只在服务器。
 - HTTPS：Let's Encrypt，到期 2027-01-30，`certbot.timer` 自动续期。
-- 访问控制：全站 Basic Auth（`/etc/nginx/.htpasswd`，属主 www-data 640）；ufw 仅放行 22/80/443。
+- 访问控制：页面内 PIN 登录；后端业务接口全部校验会话 Cookie，静态页面公开；ufw 仅放行 22/80/443。
 - 备份：每日 03:30 `/opt/homecare/backups/backup.sh`（`sqlite3 .backup` 在线备份），保留 14 天；journald 上限 200M。
 - 更新：本地 `npm run build` → 上传 `dist` 覆盖 `/opt/homecare/web` → 后端代码解包到 `/opt/homecare/backend` 并 `.venv/bin/pip install -r requirements.txt` → `systemctl restart homecare-api`。
 
-待补：异地备份副本、上一版本产物保留与一键回滚脚本、后端 PIN 登录（替代 Basic Auth）。
+待补：异地备份副本、上一版本产物保留与一键回滚脚本、老人/家属双 PIN 及角色权限（当前单 PIN 同权限）。
 
 ## 7. 未决事项
 

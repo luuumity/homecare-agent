@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { api, errorMessage, type Reminder } from '../api'
+import { markOut } from '../session'
+
+const router = useRouter()
+
+async function logout() {
+  try {
+    await api.auth.logout()
+  } catch {
+    // 网络异常也照样回登录页
+  }
+  markOut()
+  router.replace('/login')
+}
 
 type Status = 'checking' | 'ok' | 'down'
 
@@ -164,6 +178,12 @@ onUnmounted(() => {
         >
           自检
         </router-link>
+        <button
+          class="flex min-h-[3.25rem] items-center rounded-2xl border-2 border-stone-300 bg-white px-5 text-xl font-semibold text-muted shadow-sm active:bg-stone-100"
+          @click="logout"
+        >
+          退出
+        </button>
       </div>
     </header>
 

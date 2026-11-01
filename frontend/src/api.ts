@@ -183,6 +183,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     const response = await fetch(path, {
       method: options.method ?? 'GET',
       headers,
+      credentials: 'same-origin',
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
       signal: controller.signal,
     })
@@ -190,6 +191,9 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     const payload = text ? JSON.parse(text) : null
     if (!response.ok) {
       const detail = payload && typeof payload.detail === 'string' ? payload.detail : null
+      if (response.status === 401 && !path.includes('/auth/')) {
+        window.dispatchEvent(new Event('homecare-auth-expired'))
+      }
       throw new ApiError(detail ?? `请求失败：HTTP ${response.status}`, response.status)
     }
     return payload as T
@@ -291,6 +295,16 @@ export const api = {
       }),
     history: (limit = 50) => request<HistoryMessage[]>(`/api/v1/chat/history${query({ limit })}`),
     status: () => request<ChatStatus>('/api/v1/chat/status'),
+  },
+  auth: {
+    login: (pin: string) =>
+      request<{ ok: boolean; role: string }>('/api/v1/auth/login', {
+        method: 'POST',
+        body: { pin },
+        timeoutMs: 15000,
+      }),
+    me: () => request<{ ok: boolean; role: string }>('/api/v1/auth/me'),
+    logout: () => request<{ ok: boolean }>('/api/v1/auth/logout', { method: 'POST' }),
   },
 }
 

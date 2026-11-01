@@ -8,14 +8,16 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .auth import require_session
 from .config import get_settings
 from .db import check_db, check_fts5, init_db
 from .errors import BadRequest, Conflict, NotFound
 from .routers import audit as audit_routes
+from .routers import auth as auth_routes
 from .routers import calls, chat, confirmations, contacts, items, memories, reminders
 from .schemas import (
     DbDiagnose,
@@ -54,7 +56,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(settings.cors_origins),
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
@@ -75,6 +77,8 @@ async def handle_bad_request(_request: Request, exc: BadRequest) -> JSONResponse
     return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
+app.include_router(auth_routes.router, prefix="/api/v1")
+
 for router in (
     items.router,
     reminders.router,
@@ -85,7 +89,7 @@ for router in (
     audit_routes.router,
     chat.router,
 ):
-    app.include_router(router, prefix="/api/v1")
+    app.include_router(router, prefix="/api/v1", dependencies=[Depends(require_session)])
 
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -107,7 +111,7 @@ def version() -> VersionResponse:
     )
 
 
-@app.get("/api/diagnose", response_model=DiagnoseResponse)
+@app.get("/api/diagnose", response_model=DiagnoseResponse, dependencies=[Depends(require_session)])
 def diagnose() -> DiagnoseResponse:
     db = check_db(settings.db_path)
     fts5_ok, trigram_ok, fts_detail = check_fts5()

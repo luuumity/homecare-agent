@@ -47,6 +47,9 @@ class Settings:
     llm_model: str
     llm_api_key: str
     cors_origins: tuple[str, ...]
+    auth_pin: str
+    auth_secret: str
+    auth_cookie_seconds: int
 
     @property
     def llm_configured(self) -> bool:
@@ -69,4 +72,7 @@ def get_settings() -> Settings:
         llm_model=os.environ.get("LLM_MODEL", "deepseek-chat").strip(),
         llm_api_key=os.environ.get("LLM_API_KEY", "").strip(),
         cors_origins=tuple(o.strip() for o in origins.split(",") if o.strip()),
+        auth_pin=os.environ.get("AUTH_PIN", "202611").strip(),
+        auth_secret=os.environ.get("AUTH_SECRET", "dev-insecure-secret-change-me").strip(),
+        auth_cookie_seconds=int(os.environ.get("AUTH_COOKIE_DAYS", "30")) * 86400,
     )
