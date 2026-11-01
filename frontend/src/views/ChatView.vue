@@ -130,7 +130,7 @@ onMounted(loadHistory)
 </script>
 
 <template>
-  <main class="mx-auto flex h-screen max-w-5xl flex-col gap-4 px-4 sm:px-8 py-6">
+  <main class="mx-auto flex h-screen max-w-5xl flex-col gap-4 px-4 sm:px-8 py-6 max-sm:gap-2 max-sm:py-3">
     <PageHeader title="陪我说说话" subtitle="东西放哪、今天要做什么，都可以问我">
       <template #actions>
         <span
@@ -160,7 +160,7 @@ onMounted(loadHistory)
 
     <section
       ref="conversation"
-      class="flex-1 space-y-4 overflow-y-auto rounded-3xl border-2 border-stone-200 bg-white px-5 py-5"
+      class="flex-1 space-y-4 overflow-y-auto rounded-3xl border-2 border-stone-200 bg-white px-5 py-5 max-sm:space-y-2 max-sm:px-3 max-sm:py-3"
     >
       <div v-if="loadingHistory" class="py-10 text-center text-2xl text-muted">正在加载对话…</div>
 
@@ -190,7 +190,7 @@ onMounted(loadHistory)
         >
           <div
             :class="[
-              'max-w-[85%] rounded-3xl px-6 py-4 text-2xl leading-relaxed shadow-sm',
+              'max-w-[85%] rounded-3xl px-6 py-4 text-2xl leading-relaxed shadow-sm max-sm:px-4 max-sm:py-3',
               message.role === 'user'
                 ? 'bg-ink text-white'
                 : 'border-2 border-stone-200 bg-paper text-ink',
@@ -222,10 +222,10 @@ onMounted(loadHistory)
       </template>
     </section>
 
-    <section class="rounded-3xl border-2 border-stone-200 bg-white p-4">
+    <section class="rounded-3xl border-2 border-stone-200 bg-white p-4 max-sm:p-2.5">
       <div class="flex items-end gap-3">
         <button
-          class="flex min-h-[3.5rem] w-[3.5rem] shrink-0 items-center justify-center rounded-2xl border-2 border-stone-300 bg-paper text-xl font-semibold text-muted"
+          class="flex min-h-[3.5rem] w-[3.5rem] shrink-0 items-center justify-center rounded-2xl border-2 border-stone-300 bg-paper text-xl font-semibold text-muted max-sm:min-h-[2.75rem] max-sm:w-[2.75rem]"
           disabled
           title="语音输入要等平板壳完成后启用"
           aria-label="语音输入暂未启用"
