@@ -80,13 +80,13 @@ TOOL_SPECS: list[dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "find_items",
-            "description": "按名称、位置或备注查找物品记录。用户问东西放在哪时先用它。",
+            "description": "查找物品记录。用户问“东西放哪”时传关键词；问“有哪些物品/都记了什么”时把 query 留空，列出全部。",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "关键词，如老花镜、降压药"},
+                    "query": {"type": "string", "description": "关键词，如老花镜、降压药；留空则列出全部"},
                 },
-                "required": ["query"],
+                "required": [],
                 "additionalProperties": False,
             },
         },
@@ -268,8 +268,8 @@ TOOL_SPECS: list[dict[str, Any]] = [
 # ---------------------------------------------------------------- 工具执行
 
 def _find_items(conn: sqlite3.Connection, args: dict) -> dict:
-    query = _text(args, "query", max_length=100)
-    rows = repo.list_items(conn, q=query, limit=10)
+    query = _text(args, "query", required=False, max_length=100) or ""
+    rows = repo.list_items(conn, q=query, limit=20)
     return {"ok": True, "count": len(rows), "items": [_item_out(row) for row in rows]}
 
 
