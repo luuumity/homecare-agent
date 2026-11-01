@@ -84,7 +84,12 @@
 - 备份：每日 03:30 `/opt/homecare/backups/backup.sh`（`sqlite3 .backup` 在线备份），保留 14 天；journald 上限 200M。
 - 更新：本地 `npm run build` → 上传 `dist` 覆盖 `/opt/homecare/web` → 后端代码解包到 `/opt/homecare/backend` 并 `.venv/bin/pip install -r requirements.txt` → `systemctl restart homecare-api`。
 
-待补：异地备份副本、上一版本产物保留与一键回滚脚本、老人/家属双 PIN 及角色权限（当前单 PIN 同权限）。
+待补（内测期滚动处理，按优先级）：
+
+- [ ] 异地备份副本：备份目前只在本机，需推到服务器之外。候选方案：阿里云 OSS + rclone（推荐，几元/月、可脚本化）、坚果云 WebDAV、自家电脑 rsync；夸克网盘无官方开放接口，需第三方 WebDAV 桥接，不推荐。
+- [ ] 一键回滚：保留上一版 `web` 与后端代码包，提供回滚脚本。
+- [ ] 证书续期演练与服务异常提醒（`certbot.timer` 已启用，但自动续期尚未演练）。
+- [ ] 老人/家属双 PIN 及角色权限（当前单 PIN，统一 `family` 权限）。
 
 ## 7. 未决事项
 
