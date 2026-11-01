@@ -174,7 +174,7 @@ onMounted(loadHistory)
           <button
             v-for="prompt in quickPrompts"
             :key="prompt"
-            class="rounded-2xl border-2 border-stone-300 bg-paper px-5 py-3 text-xl font-semibold active:bg-stone-100"
+            class="rounded-2xl border-2 border-stone-300 bg-paper px-5 py-3 text-xl font-semibold active:bg-stone-100 max-sm:text-base"
             @click="send(prompt)"
           >
             {{ prompt }}
@@ -190,7 +190,7 @@ onMounted(loadHistory)
         >
           <div
             :class="[
-              'max-w-[85%] rounded-3xl px-6 py-4 text-2xl leading-relaxed shadow-sm max-sm:px-4 max-sm:py-3',
+              'max-w-[85%] rounded-3xl px-6 py-4 text-2xl leading-relaxed shadow-sm max-sm:rounded-2xl max-sm:px-3 max-sm:py-2.5 max-sm:text-xl',
               message.role === 'user'
                 ? 'bg-ink text-white'
                 : 'border-2 border-stone-200 bg-paper text-ink',
@@ -198,7 +198,7 @@ onMounted(loadHistory)
           >
             <p class="whitespace-pre-wrap break-words">{{ message.content }}</p>
           </div>
-          <div class="mt-2 flex flex-wrap items-center gap-2 px-2 text-lg text-muted">
+          <div class="mt-2 flex flex-wrap items-center gap-2 px-2 text-lg text-muted max-sm:mt-1 max-sm:gap-1 max-sm:text-sm">
             <span>{{ message.role === 'user' ? '我' : '小陪' }} · {{ formatTime(message.created_at) }}</span>
             <span
               v-for="(tool, index) in message.tools ?? []"
@@ -237,11 +237,11 @@ onMounted(loadHistory)
           rows="2"
           maxlength="2000"
           placeholder="点这里打字，或者按下面的按钮发送"
-          class="max-h-40 min-h-[3.5rem] flex-1 resize-none rounded-2xl border-2 border-stone-300 bg-paper px-5 py-3 text-2xl leading-snug outline-none focus:border-amber-600"
+          class="max-h-40 min-h-[3.5rem] flex-1 resize-none rounded-2xl border-2 border-stone-300 bg-paper px-5 py-3 text-2xl leading-snug outline-none focus:border-amber-600 max-sm:text-lg"
           @keydown.enter.exact.prevent="handleEnter"
         />
         <button
-          class="min-h-[3.5rem] shrink-0 rounded-2xl bg-ink px-7 text-2xl font-semibold text-white disabled:opacity-50"
+          class="min-h-[3.5rem] shrink-0 rounded-2xl bg-ink px-7 text-2xl font-semibold text-white disabled:opacity-50 max-sm:text-lg"
           :disabled="busy || !input.trim()"
           @click="send()"
         >
