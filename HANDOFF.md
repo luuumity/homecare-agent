@@ -43,7 +43,7 @@
 - 沙箱限制：内置浏览器预览层会改写 URL 查询串，中文 `?q=` 在沙箱里会 400（curl 直连与经 Vite 均 200），中文搜索需在真实浏览器/平板复验。
 - 云端**没有** Android SDK / adb / 真机；阶段 4 壳必须在本地 Trae（有 SDK + 真机）完成。
 - 仓库已托管在 GitHub：`https://github.com/luuumity/homecare-agent`（`main` 分支，已推送阶段 0–3 全部代码）。后续每完成一个阶段都需 commit + push。
-- 阶段 1–3 暂未加应用层鉴权（无账号体系），部署前在阶段 5 决定：优先 nginx Basic Auth / 平板端固定凭据，或后端 PIN 登录。上线前不要暴露到公网。
+- 阶段 5 初版已上线：阿里云香港轻量（Ubuntu 22.04.5，2C1G），`https://homecare.cinnamon.xin`。阶段 1–3 没有应用层鉴权，因此**先用 nginx Basic Auth（`/etc/nginx/.htpasswd`）挡在公网前面**；正式交家人使用前应替换为后端 PIN 登录或平板固定凭据（壳里也能处理）。
 
 ## 4. 本地 Trae 要做的 Android 壳（阶段 4）
 
@@ -73,13 +73,18 @@
 - 业务接口阶段 1 起统一 `/api/v1/...`
 - 阶段 2 起对话走 `POST /api/v1/chat`（JSON `{ "text": "..." }`）；壳后续接 HMS ASR 时，把识别文本 POST 过去，把 `reply` 交给 TTS 即可，无需另开会话接口
 
-## 6. 云端部署备忘（阶段 5）
+## 6. 云端部署现状（阶段 5，2026-11-01）
 
-- VPS：2C2G、Ubuntu 22.04/24.04 起步；域名 + HTTPS（Let's Encrypt）。中国大陆服务器需备案，境外可免。
-- nginx：`/` → `frontend/dist` 静态（`try_files ... /index.html`）；`/api` → `127.0.0.1:8000`。
-- 后端 systemd 运行 uvicorn；`.env` 权限 600，密钥只存在服务器。
-- 备份：每日 `sqlite3 .backup` + 异地副本，保留 7/30 天；保留上一版本代码与前端产物以便回滚。
-- 更新：前端 `rsync dist` 原子切换；后端 `git pull` + `pip install -r` + 重启；失败回滚上一版本。
+- 服务器：阿里云香港轻量，Ubuntu 22.04.5，2C1G + 2G swap，30G 盘；境外节点免备案。
+- 域名：`homecare.cinnamon.xin`（阿里云云解析 A 记录）→ 服务器；`www.cinnamon.xin` 的作品集站点未受影响。
+- nginx 1.18：`/` → `/opt/homecare/web`（`try_files ... /index.html`）；`/api` → `127.0.0.1:8000`；`/assets` 长缓存；HTTP 301 跳 HTTPS。
+- 后端：`homecare-api.service`（用户 `homecare`，venv `/opt/homecare/backend/.venv`，仅监听 127.0.0.1），`.env` 权限 600，密钥只在服务器。
+- HTTPS：Let's Encrypt，到期 2027-01-30，`certbot.timer` 自动续期。
+- 访问控制：全站 Basic Auth（`/etc/nginx/.htpasswd`，属主 www-data 640）；ufw 仅放行 22/80/443。
+- 备份：每日 03:30 `/opt/homecare/backups/backup.sh`（`sqlite3 .backup` 在线备份），保留 14 天；journald 上限 200M。
+- 更新：本地 `npm run build` → 上传 `dist` 覆盖 `/opt/homecare/web` → 后端代码解包到 `/opt/homecare/backend` 并 `.venv/bin/pip install -r requirements.txt` → `systemctl restart homecare-api`。
+
+待补：异地备份副本、上一版本产物保留与一键回滚脚本、后端 PIN 登录（替代 Basic Auth）。
 
 ## 7. 未决事项
 

@@ -4,7 +4,7 @@
 
 ## 当前进度
 
-**阶段 3 已完成：大屏 Web UI 业务页面。** 浏览器里可以完整点通首页、对话、物品、提醒、打电话、待确认与自检。
+**阶段 5 初版已上线：https://homecare.cinnamon.xin**（nginx Basic Auth 临时保护，见「线上部署」）。平板浏览器打开即可完整使用首页、对话、物品、提醒、打电话、待确认与自检。
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
@@ -13,7 +13,7 @@
 | 2 | Agent 编排（纯文本联调） | 已完成 |
 | 3 | 大屏 Web UI 业务页面 | 已完成 |
 | 4 | Android 壳（HMS ASR/TTS、唤醒、kiosk） | 未开始，交接本地 Trae |
-| 5 | 云端 VPS 部署、备份、回滚 | 未开始 |
+| 5 | 云端 VPS 部署、备份、回滚 | 初版已完成（域名 + HTTPS + 备份） |
 
 ## 技术栈
 
@@ -198,6 +198,32 @@ npm run build      # 产物在 frontend/dist/
 - 待确认页：老人已确认 → 家属确认两步走通，状态变为「已生效」，待确认区清空
 - 已知环境限制：本沙箱的浏览器预览层会改写 URL 查询串（中文查询会被解成原始字节，后端返回 400）。同一请求用 curl 直连后端与经 Vite（`?q=%E8%80%81...`）均返回 200 且只命中「老花镜」，前端也已改用 `URLSearchParams` 编码，因此属沙箱问题；中文搜索需在真实浏览器/平板上复验
 - 阶段 3 验收结束后已停止本地服务并删除临时库，开发库未被写入
+
+阶段 5（2026-11-01）：
+
+- 阿里云香港轻量（Ubuntu 22.04.5，2C1G，30G 盘）+ 2G swap；nginx 1.18 静态托管 `dist`，`/api` 反代 `127.0.0.1:8000`
+- 后端 systemd（`homecare-api.service`，用户 `homecare`，仅监听 127.0.0.1，开机自启）
+- `https://homecare.cinnamon.xin` Let's Encrypt 证书生效（到期 2027-01-30，`certbot.timer` 自动续期），HTTP 301 跳 HTTPS
+- 全站 nginx Basic Auth（未登录返回 401）；ufw 仅放行 22/80/443
+- 每日 03:30 用 `sqlite3 .backup` 做在线备份，保留 14 天；journald 上限 200M
+- 线上真实模型联调 3 轮通过（查物品 / 记忆问答 / 记物品，使用临时库，未污染生产库）
+- 浏览器实测：首页四磁贴与时钟、进入 `/chat` 并收到模型回复，控制台无报错
+
+## 线上部署（阶段 5）
+
+线上地址 `https://homecare.cinnamon.xin`，临时用 nginx Basic Auth 保护（用户名 `family`，密码见交付说明；修改命令 `htpasswd` 或更新 `/etc/nginx/.htpasswd` 后 `systemctl reload nginx`）。
+
+常用运维命令（在服务器上以 root 执行）：
+
+```bash
+systemctl status homecare-api        # 后端状态
+systemctl restart homecare-api       # 改代码/改 .env 后重启
+journalctl -u homecare-api -n 50     # 后端日志
+/opt/homecare/backups/backup.sh      # 手动备份（产物在 /opt/homecare/backups）
+nginx -t && systemctl reload nginx   # 改 nginx 配置后校验并重载
+```
+
+更新流程：本地 `npm run build` → 上传 `dist` 到 `/opt/homecare/web` → 后端代码解包到 `/opt/homecare/backend` 并 `.venv/bin/pip install -r requirements.txt` → `systemctl restart homecare-api`。
 
 ## 版本约定
 
