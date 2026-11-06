@@ -41,11 +41,16 @@
 - 阶段 3：`frontend/` 完成大屏业务 UI，路由 `/`、`/chat`、`/items`、`/reminders`、`/contacts`、`/confirmations`、`/diagnose`；共享组件 `PageHeader`、`BaseModal`、`EmptyState`；接口统一走 `src/api.ts`（超时、错误、`X-Actor`、`URLSearchParams` 编码）。
 - 阶段 3 验收：`npm run build` 通过；浏览器端到端走通首页、对话（`find_items`）、物品增删与过滤、提醒暂停、打电话记录、待确认两步流程。
 - 沙箱限制：内置浏览器预览层会改写 URL 查询串，中文 `?q=` 在沙箱里会 400（curl 直连与经 Vite 均 200），中文搜索需在真实浏览器/平板复验。
-- 云端**没有** Android SDK / adb / 真机；阶段 4 壳必须在本地 Trae（有 SDK + 真机）完成。
+- 云端**没有** Android SDK / adb / 真机；阶段 4 壳的构建与真机安装必须在本地 Trae（有 SDK + 真机），骨架已在云端写好。
 - 仓库已托管在 GitHub：`https://github.com/luuumity/homecare-agent`（`main` 分支，已推送阶段 0–3 全部代码）。后续每完成一个阶段都需 commit + push。
 - 阶段 5 初版已上线：阿里云香港轻量（Ubuntu 22.04.5，2C1G），`https://homecare.cinnamon.xin`。鉴权已改为**页面内 PIN 登录**（`AUTH_PIN` 在服务器 `.env`，HMAC 签名 Cookie 30 天，失败 5 次按 IP 锁定 5 分钟）；目前是单 PIN、统一 `family` 角色，老人/家属双 PIN 需后续扩展。
 
 ## 4. 本地 Trae 要做的 Android 壳（阶段 4）
+
+**状态：骨架已在云端完成并推送（2026-11-06），待本地构建与真机验收。完整步骤见 [docs/stage4-handoff.md](./docs/stage4-handoff.md)。**
+
+已完成：Gradle 8.7 / AGP 8.5.2 工程、Manifest、`MainActivity`（WebView / 沉浸全屏 / 常亮 / 返回键 / 断网重试 / 崩溃重启）、`BootReceiver`（开机自启）、`ShellBridge`（版本、TTS、拨号盘、安装更新、ASR 占位）、GitHub Actions 自动出 debug APK。
+未完成：HMS ASR、提醒通知、Kiosk LockTask、真机验收。
 
 产出目录 `shell/android/`，Kotlin，单个 Activity + WebView。
 
@@ -95,7 +100,8 @@
 
 - 家属二次确认（短信签名链接）暂缓，只留接口。
 - 唤醒方案最终选型需真机对比（按钮 / sherpa-onnx / Porcupine）。
-- 云厂商、域名、备案方式待定。
+- 华为 AGC 应用与 `agconnect-services.json`（阶段 4 第二步，需本人账号）。
+- 更新包分发：服务器 `/download/app.apk` 的 nginx 配置与上传流程尚未落地。
 - 护士站是否可能开放 API，暂无结论。
 
 ## 8. 现阶段约束

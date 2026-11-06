@@ -12,7 +12,7 @@
 | 1 | 存储层 + 原始 REST API + 审计 | 已完成 |
 | 2 | Agent 编排（纯文本联调） | 已完成 |
 | 3 | 大屏 Web UI 业务页面 | 已完成 |
-| 4 | Android 壳（HMS ASR/TTS、唤醒、kiosk） | 未开始，交接本地 Trae |
+| 4 | Android 壳（WebView、kiosk、版本检查；HMS 语音待第二步） | 骨架已就绪（`shell/android/`），待本地构建与真机验收 |
 | 5 | 云端 VPS 部署、备份、回滚 | 初版已完成（域名 + HTTPS + 备份） |
 
 ## 技术栈
@@ -75,7 +75,9 @@ frontend/
   src/views/DiagnoseView.vue  设备自检页
   src/components/             PageHeader / BaseModal / EmptyState
   public/version.json         前端版本约定
-shell/version.json            壳版本占位（阶段 4 更新）
+shell/version.json            壳版本约定
+shell/android/                Android 壳工程（阶段 4 骨架，本地构建）
+docs/stage4-handoff.md        阶段 4 构建、安装与真机验收步骤
 ```
 
 ## 本地启动
@@ -230,7 +232,7 @@ nginx -t && systemctl reload nginx   # 改 nginx 配置后校验并重载
 - 业务接口统一挂在 `/api/v1/` 下（阶段 1 起）；阶段 0 探针接口保留在 `/api/`。
 - 后端版本：`backend/.env` 的 `APP_VERSION`（默认值在 `backend/app/config.py`），当前 `0.4.0-stage3`。
 - 前端版本：`frontend/public/version.json`（`web_version`、`min_shell_version`、`built_at`）。
-- 壳版本：`shell/version.json`（阶段 4 随 APK 构建更新）。
+- 壳版本：`shell/version.json`（当前 `0.1.0`，需与 `shell/android/app/build.gradle.kts` 的 `SHELL_VERSION`、`versionName` 一致）。
 - 壳启动时对比 `/api/version` 的 `min_shell_version`，低于则提示家属安装新 APK；Web 更新走同域静态文件，刷新即生效。
 
 ## 注意

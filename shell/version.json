@@ -1,5 +1,5 @@
 {
   "shell_version": "0.1.0",
   "min_shell_version": "0.1.0",
-  "note": "占位文件。阶段 4 由本地 Trae 生成 Android 壳后，随 APK 构建更新此版本。"
+  "note": "阶段 4 骨架已就绪（shell/android/）。构建出的 APK 版本需与 app/build.gradle.kts 的 SHELL_VERSION、versionName 保持一致。"
 }
