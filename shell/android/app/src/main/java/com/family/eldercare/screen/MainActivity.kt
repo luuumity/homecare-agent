@@ -62,7 +62,7 @@ class MainActivity : Activity() {
         updateBanner = findViewById(R.id.update_banner)
         findViewById<Button>(R.id.retry_button).setOnClickListener { reload() }
 
-        bridge = ShellBridge(this)
+        bridge = ShellBridge(this, webView)
         configureWebView()
         enterImmersive()
         installCrashRestart()
@@ -86,6 +86,12 @@ class MainActivity : Activity() {
         executor.shutdownNow()
         webView.destroy()
         super.onDestroy()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (bridge.onActivityResult(requestCode, resultCode, data)) return
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     // ---------------------------------------------------------------- WebView

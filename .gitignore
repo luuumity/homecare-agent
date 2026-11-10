@@ -26,6 +26,8 @@ shell/android/app/build/
 shell/android/local.properties
 shell/android/**/*.apk
 shell/android/**/*.aab
+# AGC 配置含应用密钥，绝不提交（见 docs/hms-asr-setup.md）
+shell/android/app/agconnect-services.json
 
 # 编辑器 / 系统
 .DS_Store

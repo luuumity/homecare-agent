@@ -3,6 +3,10 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// HMS ML Kit 语音识别开关：默认关闭，构建不依赖华为仓库、不需要 agconnect-services.json。
+// 开启：./gradlew assembleDebug -PhmsAsr=true（配置步骤见 docs/hms-asr-setup.md）
+val hmsAsrEnabled = (findProperty("hmsAsr") as String?)?.toBoolean() ?: false
+
 android {
     namespace = "com.family.eldercare.screen"
     compileSdk = 34
@@ -18,6 +22,14 @@ android {
         buildConfigField("String", "SHELL_VERSION", "\"0.1.0\"")
         // Web 入口：业务页面全部由服务端下发，壳只负责原生能力
         buildConfigField("String", "SERVER_URL", "\"https://homecare.cinnamon.xin/\"")
+        // 语音识别实现：true = HMS ML Kit（失败自动回退系统识别），false = 仅系统识别
+        buildConfigField("boolean", "HMS_ASR_ENABLED", hmsAsrEnabled.toString())
+    }
+
+    sourceSets {
+        getByName("main") {
+            if (hmsAsrEnabled) java.srcDir("src/hms/java")
+        }
     }
 
     buildTypes {
@@ -46,4 +58,8 @@ android {
 
 dependencies {
     // 刻意不引入 androidx：壳只有一个 Activity + WebView，依赖越少构建越稳
+    if (hmsAsrEnabled) {
+        // 只有 -PhmsAsr=true 才引入；默认构建不解析华为仓库，缺 AGC 配置也能构建
+        implementation("com.huawei.hms:ml-computer-voice-asr-plugin:3.11.0.301")
+    }
 }

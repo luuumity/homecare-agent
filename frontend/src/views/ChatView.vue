@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import {
   api,
   errorMessage,
@@ -8,6 +8,7 @@ import {
   type ToolEvent,
 } from '../api'
 import PageHeader from '../components/PageHeader.vue'
+import { hasShell, isSpeaking, listen, onSpeakingChange, speak, stopListening, stopSpeaking } from '../shell'
 
 interface Bubble {
   id: string
@@ -25,6 +26,11 @@ const error = ref('')
 const pendingIds = ref<string[]>([])
 const status = ref<ChatStatus | null>(null)
 const conversation = ref<HTMLElement | null>(null)
+const shellReady = ref(hasShell())
+const listening = ref(false)
+const speaking = ref(isSpeaking())
+const voiceError = ref('')
+let unsubscribeSpeaking: (() => void) | null = null
 
 const toolLabels: Record<string, string> = {
   find_items: '查了物品记录',
@@ -83,7 +89,9 @@ async function send(text?: string) {
   if (!content || busy.value) return
 
   error.value = ''
+  voiceError.value = ''
   pendingIds.value = []
+  stopSpeaking()
   const localUser: Bubble = {
     id: `local-${Date.now()}`,
     role: 'user',
@@ -105,6 +113,7 @@ async function send(text?: string) {
       tools: result.tool_calls,
     })
     pendingIds.value = result.pending_confirmation_ids
+    if (shellReady.value) speak(result.reply)
   } catch (e) {
     error.value = errorMessage(e)
     messages.value = messages.value.filter((item) => item.id !== localUser.id)
@@ -120,13 +129,53 @@ function handleEnter(event: KeyboardEvent) {
   send()
 }
 
+/** 话筒键：正在播报就打断播报；正在听就取消；否则开始一次识别。 */
+async function toggleVoice() {
+  voiceError.value = ''
+  if (speaking.value) {
+    stopSpeaking()
+    return
+  }
+  if (listening.value) {
+    listening.value = false
+    stopListening()
+    return
+  }
+
+  listening.value = true
+  try {
+    const text = (await listen()).trim()
+    if (!text) {
+      voiceError.value = '没有听清，请再说一次'
+      return
+    }
+    input.value = text
+    await send()
+  } catch (e) {
+    const message = e instanceof Error ? e.message : '语音输入失败'
+    if (message !== '已取消语音输入') voiceError.value = message
+  } finally {
+    listening.value = false
+  }
+}
+
 function formatTime(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
-onMounted(loadHistory)
+onMounted(() => {
+  unsubscribeSpeaking = onSpeakingChange((state) => {
+    speaking.value = state === 'start'
+  })
+  loadHistory()
+})
+
+onUnmounted(() => {
+  unsubscribeSpeaking?.()
+  stopSpeaking()
+})
 </script>
 
 <template>
@@ -225,12 +274,36 @@ onMounted(loadHistory)
     <section class="rounded-3xl border-2 border-stone-200 bg-white p-4 max-sm:p-2.5">
       <div class="flex items-end gap-3">
         <button
-          class="flex min-h-[3.5rem] w-[3.5rem] shrink-0 items-center justify-center rounded-2xl border-2 border-stone-300 bg-paper text-xl font-semibold text-muted max-sm:min-h-[2.75rem] max-sm:w-[2.75rem]"
-          disabled
-          title="语音输入要等平板壳完成后启用"
-          aria-label="语音输入暂未启用"
+          type="button"
+          :class="[
+            'flex min-h-[4.5rem] w-[4.5rem] shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border-2 text-lg font-semibold max-sm:min-h-[3.25rem] max-sm:w-[3.25rem] max-sm:text-sm',
+            speaking
+              ? 'border-amber-700 bg-amber-200 text-amber-950'
+              : listening
+                ? 'animate-pulse border-amber-700 bg-amber-100 text-amber-950'
+                : shellReady
+                  ? 'border-amber-600 bg-amber-50 text-amber-900 active:bg-amber-100'
+                  : 'border-stone-300 bg-paper text-muted',
+          ]"
+          :disabled="!shellReady || (busy && !speaking)"
+          :aria-label="speaking ? '停止播报' : listening ? '正在听，点一下取消' : '语音输入'"
+          :title="
+            !shellReady
+              ? '语音输入需要在平板壳里使用'
+              : speaking
+                ? '按一下停止播报'
+                : listening
+                  ? '正在听，按一下取消'
+                  : '按一下说话'
+          "
+          @click="toggleVoice"
         >
-          话筒
+          <span class="text-2xl font-bold leading-none max-sm:text-xl">
+            {{ speaking ? '停' : listening ? '听' : '说' }}
+          </span>
+          <span class="text-xs leading-none">
+            {{ speaking ? '正在说' : listening ? '正在听' : shellReady ? '点一下' : '待壳' }}
+          </span>
         </button>
         <textarea
           v-model="input"
@@ -248,7 +321,14 @@ onMounted(loadHistory)
           {{ busy ? '等等' : '发送' }}
         </button>
       </div>
-      <p class="mt-2 px-1 text-lg text-muted">语音输入会在平板壳完成后启用；现在先用下面的键盘打字。</p>
+      <p class="mt-2 px-1 text-lg text-muted">
+        {{
+          shellReady
+            ? '按一下话筒说话，识别完会自动发送；正在播报时按一下可以停下。'
+            : '当前是网页版，先用键盘输入；在平板壳里可以用话筒说话。'
+        }}
+      </p>
+      <p v-if="voiceError" class="mt-2 px-1 text-lg text-rose-800">{{ voiceError }}</p>
     </section>
   </main>
 </template>

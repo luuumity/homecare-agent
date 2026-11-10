@@ -12,7 +12,7 @@
 | 1 | 存储层 + 原始 REST API + 审计 | 已完成 |
 | 2 | Agent 编排（纯文本联调） | 已完成 |
 | 3 | 大屏 Web UI 业务页面 | 已完成 |
-| 4 | Android 壳（WebView、kiosk、版本检查；HMS 语音待第二步） | 骨架已就绪（`shell/android/`），待本地构建与真机验收 |
+| 4 | Android 壳（WebView、kiosk、版本检查；语音：系统识别默认 + HMS 可选） | 骨架 + 语音链路已就绪（`shell/android/`），待本地构建与真机验收 |
 | 5 | 云端 VPS 部署、备份、回滚 | 初版已完成（域名 + HTTPS + 备份） |
 
 ## 技术栈
@@ -21,7 +21,7 @@
 - 后端：Python FastAPI + sqlite3 标准库（`backend/`），无 ORM、无 Docker
 - 数据库：单文件 SQLite，中文检索用 FTS5 `trigram` 分词
 - 模型：DeepSeek（OpenAI 兼容），密钥只放后端
-- 壳：HarmonyOS 4.0 平板上的 Android 薄壳 + WebView + HMS 语音（阶段 4）
+- 壳：HarmonyOS 4.0 平板上的 Android 薄壳 + WebView + 语音（系统识别默认，HMS ML Kit 可选）
 
 ## Agent 能力
 
@@ -66,6 +66,7 @@ backend/
 frontend/
   src/api.ts                  带类型的接口封装（统一超时、错误、X-Actor）
   src/router.ts               路由：/ /chat /items /reminders /contacts /confirmations /diagnose
+  src/shell.ts                平板壳桥接层（window.Shell，无壳时安全降级）
   src/views/HomeView.vue      大字首页（时钟、四个磁贴、下一件事、待确认徽标）
   src/views/ChatView.vue      对话页（历史、发送、工具标签、待确认跳转）
   src/views/ItemsView.vue     东西放哪了（搜索、新增/改位置/删除）
@@ -78,6 +79,7 @@ frontend/
 shell/version.json            壳版本约定
 shell/android/                Android 壳工程（阶段 4 骨架，本地构建）
 docs/stage4-handoff.md        阶段 4 构建、安装与真机验收步骤
+docs/hms-asr-setup.md         语音链路契约、识别开关与 AGC 配置步骤
 ```
 
 ## 本地启动

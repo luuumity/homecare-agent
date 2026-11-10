@@ -47,10 +47,11 @@
 
 ## 4. 本地 Trae 要做的 Android 壳（阶段 4）
 
-**状态：骨架已在云端完成并推送（2026-11-06），待本地构建与真机验收。完整步骤见 [docs/stage4-handoff.md](./docs/stage4-handoff.md)。**
+**状态：骨架已在云端完成并推送（2026-11-06），语音链路（系统识别默认 + HMS 可选）已接通，待本地构建与真机验收。完整步骤见 [docs/stage4-handoff.md](./docs/stage4-handoff.md)，语音配置见 [docs/hms-asr-setup.md](./docs/hms-asr-setup.md)。**
 
-已完成：Gradle 8.7 / AGP 8.5.2 工程、Manifest、`MainActivity`（WebView / 沉浸全屏 / 常亮 / 返回键 / 断网重试 / 崩溃重启）、`BootReceiver`（开机自启）、`ShellBridge`（版本、TTS、拨号盘、安装更新、ASR 占位）、GitHub Actions 自动出 debug APK。
-未完成：HMS ASR、提醒通知、Kiosk LockTask、真机验收。
+已完成：Gradle 8.7 / AGP 8.5.2 工程、Manifest、`MainActivity`（WebView / 沉浸全屏 / 常亮 / 返回键 / 断网重试 / 崩溃重启）、`BootReceiver`（开机自启）、`ShellBridge`（版本、TTS 播报状态、拨号盘、安装更新、语音识别）、前端 `src/shell.ts` 桥接层与对话页语音交互、GitHub Actions 自动出 debug APK。
+语音识别：默认走系统 `RecognizerIntent`（无需 AGC 配置）；`-PhmsAsr=true` 时启用 HMS ML Kit 实现（缺少配置会自动回退系统识别，默认构建不依赖华为仓库）。
+未完成：提醒通知、Kiosk LockTask、正式签名与 APK 分发、真机验收。
 
 产出目录 `shell/android/`，Kotlin，单个 Activity + WebView。
 
@@ -58,10 +59,11 @@
 2. **WebView**：加载 `https://<域名>/`；开启 JS、DOM storage；同域 `/api` 走同一域名；`onPermissionRequest` 自动授予麦克风给本站；禁止外部链接跳出（拦截非本站 URL）。
 3. **Kiosk**：全屏沉浸、隐藏导航栏、屏幕常亮（`FLAG_KEEP_SCREEN_ON`）、固定方向（按实际摆放）、拦截返回键（首页时回到首页而非退出）、崩溃自动重启 Activity。
 4. **开机自启**：监听 `BOOT_COMPLETED`；Android 10+ 后台启动 Activity 受限，需在华为「应用启动管理」里允许自启动，首次由家人手动打开并授权（写入设置引导）。
-5. **语音桥**：`addJavascriptInterface` 或 WebMessage 暴露：
-   - `speech.asrStart()` / `asrStop()`：HMS ML Kit 短语音识别（≤60s），返回文本给 Web；无 HMS 时回退系统 `SpeechRecognizer`。
-   - `speech.ttsSpeak(text)` / `ttsStop()`：HMS TTS；说话前先 `stop`。
-   - 唤醒：先做「常驻大按钮 / BLE 按钮」触发；再评估 sherpa-onnx 离线唤醒词（4.0 上比 HMS 端侧方案可行）。
+5. **语音桥**：已实现 `window.Shell`（`addJavascriptInterface`）。网页侧 `frontend/src/shell.ts` 负责检测与降级，`ChatView.vue` 负责话筒按钮、正在听/正在说状态与自动发送。
+   - ASR：`SpeechInput` 抽象；默认 `SystemSpeechInput`（`ACTION_RECOGNIZE_SPEECH`，无需 AGC）；`-PhmsAsr=true` 启用 `HmsSpeechInput`（HMS ML Kit 插件），失败自动回退系统识别。
+   - TTS：系统 `TextToSpeech`，播报前先 `stop`；通过 `onShellSpeakState('start'|'done')` 驱动网页状态，网页可随时打断。
+   - 唤醒：仍先做「按一下话筒 / 常驻大按钮」，BLE 按钮与离线唤醒词未做。
+   - 配置与验收清单见 [docs/hms-asr-setup.md](./docs/hms-asr-setup.md)。
 6. **版本与更新**：启动读取 `/api/version`，与 `BuildConfig.SHELL_VERSION` 比对 `min_shell_version`；低于则显示家属可见提示，下载同域 `/download/app.apk`，调起系统安装（`REQUEST_INSTALL_PACKAGES`，需家人点确认）。同步更新 `shell/version.json`。
 7. **可维护性**：崩溃与关键日志本地落盘；预留上报接口（阶段 5 定）；WebView 远程调试仅在 debug 包开启。
 8. **交付**：APK、签名/安装说明、真机验收记录，回填本文件。

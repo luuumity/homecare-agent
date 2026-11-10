@@ -118,21 +118,21 @@ keytool -genkeypair -v -keystore homecare-release.jks -alias homecare \
 
 keystore 与密码**绝不提交仓库**（`.gitignore` 已排除 `*.jks` / `*.keystore`）。
 
-## 8. 第二步：HMS 语音（需要你的华为账号）
+## 8. 第二步：HMS 语音（可选，需要华为账号）
+
+> 现状：语音链路已实现。默认用系统 `RecognizerIntent`，**不做任何 AGC 配置也能用**；HMS 只是可替换实现，开启方式与完整步骤见 [hms-asr-setup.md](./hms-asr-setup.md)。
 
 1. 打开 AppGallery Connect，创建应用，包名填 `com.family.eldercare.screen`
-2. 开通 ML Kit 语音识别 / 语音合成
-3. 下载 `agconnect-services.json`，放到 `app/` 目录（**含项目信息，需评估是否提交；建议加密或本地保管**）
-4. 在 `app/build.gradle.kts` 添加 HMS 依赖与 `agcp` 插件
-5. 实现 `ShellBridge.startListening()`：HMS 短语音识别（单次 ≤60 秒），结果通过
-   `webView.evaluateJavascript("window.onShellAsrResult && onShellAsrResult('...')", null)` 回传
+2. 开通 ML Kit 语音识别
+3. 下载 `agconnect-services.json`，放到 `app/` 目录（`.gitignore` 已排除，**不要提交**）
+4. 构建时加 `-PhmsAsr=true`（依赖与源集由 `app/build.gradle.kts` 的条件开关控制，默认构建不受影响）
+5. 识别结果由 `ShellBridge` 通过 `window.onShellAsrResult` 回传，HMS 启动失败会自动回退系统识别
 6. TTS 注意：**平板不支持离线 TTS Full SDK**，只能用在线方案；每次朗读前先 `stop()` 防叠音
 
-## 9. 网页侧需要配合的改动（阶段 4 第二步）
+## 9. 网页侧配合（已完成）
 
-- 检测 `window.Shell` 存在时启用对话页语音按钮（当前禁用，标注"要等平板壳"）
-- 收到 `onShellAsrResult` 后填入输入框并自动发送
-- 回复到达后按设置调用 `Shell.speak(reply)`（默认开启，可关）
+- `frontend/src/shell.ts`：检测 `window.Shell`，封装 `speak` / `listen` / `callNumber`，无壳时安全降级
+- 对话页：有壳时启用话筒按钮，识别结果填入输入框并自动发送；回复自动播报，可按下打断
 - 打电话：壳内可用 `Shell.callNumber(phone)` 直接调起拨号盘；网页版仍只记录
 
 ## 10. 验收清单（真机）
