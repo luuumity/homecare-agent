@@ -97,8 +97,9 @@ def main() -> int:
         assert pending["ok"] and pending["memory"]["status"] == "pending"
         assert pending["memory"]["confirmation_id"], "医疗/身份记忆未进入确认流程"
 
-        bad = tools.execute_tool(conn, "find_items", {})
-        assert not bad["ok"] and "query" in bad["error"]
+        listed = tools.execute_tool(conn, "find_items", {})
+        names = {item["name"] for item in listed["items"]}
+        assert listed["ok"] and {"老花镜", "体温计"} <= names, listed
 
     def tool_loop() -> None:
         responses = [

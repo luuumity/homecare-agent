@@ -1,13 +1,13 @@
 # 交接说明（HANDOFF）
 
-给本地 Trae（有 Android SDK / adb / 真机）以及未来的自己。云端环境已完成阶段 0–3，但无法构建或安装 Android 壳。
+给本地 Trae（有 Android SDK / adb / 真机）以及未来的自己。云端环境已完成阶段 0–3 与阶段 5 部署，但无法构建或安装 Android 壳。
 
 ## 1. 背景
 
 - 使用场景：养老院房间里的 10 寸平板，常驻大屏，给卧床（半身不遂）的爷爷和行动方便但健忘的奶奶使用。
 - 设备：华为 MatePad Air **DBY2-W00**，HarmonyOS 4.0。
 - 家属不常在家：Web 部分必须能远程更新；壳（APK）偶尔更新，由家人点一下安装。
-- 当前仓库：`frontend/` + `backend/` 已完成阶段 0–3；Android 壳未开始。
+- 当前仓库：`frontend/` + `backend/` 已完成阶段 0–3 并部署上线（阶段 5 初版）；Android 壳骨架已就绪（阶段 4，`shell/android/`），待本地构建与真机验收。
 
 ## 2. 已锁定决策（不要再改）
 
@@ -26,7 +26,7 @@
 - Core Speech Kit 端侧唤醒/识别需 HarmonyOS 6+，**4.0 用不了**。
 - TTS 说话前先停掉上一次播放（XiaoBan 的经验），避免叠音。
 
-## 3. 云端已完成（阶段 0–3）
+## 3. 云端已完成（阶段 0–3 与阶段 5 部署）
 
 - 阶段 0：`backend/` 探针接口 `/api/health`、`/api/version`、`/api/diagnose`；离线探针；`frontend/` 大字首页与 `/diagnose`；`shell/version.json`。
 - 阶段 1：迁移到 schema v1（`app/migrations.py`），建齐业务表（messages/summaries/conversation_state/memories/memory_versions/memories_fts/items/reminders/call_logs/contacts/documents/pending_confirmations/audit_log/sync_outbox/sync_state）。

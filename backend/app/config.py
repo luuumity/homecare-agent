@@ -63,7 +63,7 @@ def get_settings() -> Settings:
         "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
     )
     return Settings(
-        app_version=os.environ.get("APP_VERSION", "0.4.0-stage3"),
+        app_version=os.environ.get("APP_VERSION", "0.5.0-stage5"),
         api_version=os.environ.get("API_VERSION", "v1"),
         min_shell_version=os.environ.get("MIN_SHELL_VERSION", "0.1.0"),
         timezone=os.environ.get("TIMEZONE", "Asia/Shanghai"),
@@ -72,7 +72,7 @@ def get_settings() -> Settings:
         llm_model=os.environ.get("LLM_MODEL", "deepseek-chat").strip(),
         llm_api_key=os.environ.get("LLM_API_KEY", "").strip(),
         cors_origins=tuple(o.strip() for o in origins.split(",") if o.strip()),
-        auth_pin=os.environ.get("AUTH_PIN", "202611").strip(),
+        auth_pin=os.environ.get("AUTH_PIN", "123321").strip(),
         auth_secret=os.environ.get("AUTH_SECRET", "dev-insecure-secret-change-me").strip(),
         auth_cookie_seconds=int(os.environ.get("AUTH_COOKIE_DAYS", "30")) * 86400,
     )

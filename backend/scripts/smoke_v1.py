@@ -1,18 +1,22 @@
 """阶段 1 接口冒烟测试：需先启动后端。
 
 用法（backend/ 下）：.venv/bin/python scripts/smoke_v1.py
+PIN 默认 123321，可用环境变量 SMOKE_PIN 覆盖。
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 
 BASE = "http://127.0.0.1:8000"
+PIN = os.environ.get("SMOKE_PIN", "123321")
 failures: list[str] = []
+cookie: str | None = None
 
 
 def req(method: str, path: str, body=None, actor: str | None = None, expect: int = 200):
@@ -21,6 +25,8 @@ def req(method: str, path: str, body=None, actor: str | None = None, expect: int
     request.add_header("Content-Type", "application/json")
     if actor:
         request.add_header("X-Actor", actor)
+    if cookie:
+        request.add_header("Cookie", cookie)
     try:
         with urllib.request.urlopen(request, timeout=10) as response:
             code, text = response.status, response.read().decode("utf-8")
@@ -29,6 +35,25 @@ def req(method: str, path: str, body=None, actor: str | None = None, expect: int
     if code != expect:
         raise AssertionError(f"{method} {path} -> {code}（期望 {expect}）：{text}")
     return json.loads(text) if text else None
+
+
+def login() -> None:
+    """用 PIN 换会话 Cookie，后续请求都带上。"""
+    global cookie
+    data = json.dumps({"pin": PIN}).encode("utf-8")
+    request = urllib.request.Request(BASE + "/api/v1/auth/login", data=data, method="POST")
+    request.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            set_cookies = response.headers.get_all("Set-Cookie") or []
+    except urllib.error.HTTPError as exc:
+        raise AssertionError(f"登录失败 {exc.code}：{exc.read().decode('utf-8')}") from exc
+    for raw in set_cookies:
+        pair = raw.split(";", 1)[0]
+        if pair.startswith("homecare_session="):
+            cookie = pair
+            return
+    raise AssertionError(f"登录未返回会话 Cookie：{set_cookies}")
 
 
 def check(name: str, fn) -> None:
@@ -41,6 +66,14 @@ def check(name: str, fn) -> None:
 
 
 def main() -> int:
+    try:
+        login()
+    except Exception as exc:  # noqa: BLE001
+        print(f"FAIL  登录：{exc}")
+        print("提示：PIN 默认 123321，可用 SMOKE_PIN 覆盖；服务需已启动。")
+        return 1
+    print("PASS  登录（PIN 会话已建立）")
+
     def items() -> None:
         created = req("POST", "/api/v1/items",
                       {"name": "老花镜", "location": "床头柜第二层", "note": "黑色镜框"},

@@ -230,10 +230,12 @@ nginx -t && systemctl reload nginx   # 改 nginx 配置后校验并重载
 ## 版本约定
 
 - 业务接口统一挂在 `/api/v1/` 下（阶段 1 起）；阶段 0 探针接口保留在 `/api/`。
-- 后端版本：`backend/.env` 的 `APP_VERSION`（默认值在 `backend/app/config.py`），当前 `0.4.0-stage3`。
-- 前端版本：`frontend/public/version.json`（`web_version`、`min_shell_version`、`built_at`）。
+- 后端版本：唯一来源是 `APP_VERSION`（默认值在 `backend/app/config.py`，与 `backend/.env.example` 一致），当前 `0.5.0-stage5`；`/api/version`、`/api/health`、`/api/diagnose` 均读取该值。
+- 前端版本：`frontend/public/version.json`（`web_version`、`min_shell_version`、`built_at`）与 `frontend/package.json` 的 `version` 需与后端 `APP_VERSION` 保持一致，发版时一并更新。
+- 登录 PIN：唯一来源是 `AUTH_PIN`（本地默认值在 `backend/app/config.py`，与 `backend/.env.example` 一致，均为 `123321`）；线上以服务器 `/opt/homecare/backend/.env` 为准，改完需重启服务。
 - 壳版本：`shell/version.json`（当前 `0.1.0`，需与 `shell/android/app/build.gradle.kts` 的 `SHELL_VERSION`、`versionName` 一致）。
 - 壳启动时对比 `/api/version` 的 `min_shell_version`，低于则提示家属安装新 APK；Web 更新走同域静态文件，刷新即生效。
+- 变更记录见 [CHANGELOG.md](./CHANGELOG.md)。
 
 ## 注意
 
